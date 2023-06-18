@@ -2,28 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Icon from "../../assets/ToddleIcon.png";
 import { IoIosArrowBack } from "react-icons/io";
-import { BiSearch } from "react-icons/bi";
 import {
   Box,
   Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
   Divider,
   Flex,
   FormControl,
   FormLabel,
-  Heading,
-  IconButton,
   Image,
   Input,
   InputGroup,
   InputLeftElement,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -35,23 +24,23 @@ import {
   Textarea,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaEdit, FaTrash } from "react-icons/fa";
 import { SearchIcon, AddIcon } from "@chakra-ui/icons";
 import NoPostMobile from "../../assets/NoPostMobile.png";
-import { BsThreeDotsVertical, BsBookmarkFill } from "react-icons/bs";
+import { BsBookmarkFill } from "react-icons/bs";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { BsBookmark } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import PostCard from "../postCard/PostCard";
 
 const Board = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [subject, setSubject] = useState("");
   const [image, setImage] = useState(null);
   const [description, setDescription] = useState("");
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [board, setBoard] = useState({});
   const [posts, setPosts] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editPostId, setEditPostId] = useState(null);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -70,13 +59,14 @@ const Board = () => {
     }
   };
 
+  useEffect(() => {
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, posts]);
+
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchQuery, posts]);
 
   useEffect(() => {
     const boards = localStorage.getItem("boards");
@@ -91,7 +81,6 @@ const Board = () => {
       return;
     }
     setBoard(board);
-
     const storedPosts = localStorage.getItem("posts");
     if (storedPosts) {
       const parsedPosts = JSON.parse(storedPosts);
@@ -100,7 +89,7 @@ const Board = () => {
       );
       setPosts(boardPosts);
     }
-  }, []);
+  }, [id, navigate]);
 
   const handleClickBookmark = (id) => {};
 
@@ -114,6 +103,16 @@ const Board = () => {
 
   const handleCreatePost = () => {
     onOpen();
+    setSubject((prev) => prev.trim());
+    if (subject === "") return;
+    const date = new Date();
+
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+
+    let currentDate = `${day}-${month}-${year}`;
+
     const newPost = {
       id: Math.random().toString(36).substr(2, 9),
       boardId: board.id,
@@ -122,17 +121,14 @@ const Board = () => {
       description: description,
       isBookmarked: false,
       likes: 0,
+      createdAt: currentDate,
+      updatedAt: currentDate,
     };
-
     const existingPosts = localStorage.getItem("posts");
     const updatedPosts = existingPosts ? JSON.parse(existingPosts) : [];
-
     updatedPosts.push(newPost);
-
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
-
     setPosts([...posts, newPost]);
-
     setSubject("");
     setImage(null);
     setDescription("");
@@ -143,6 +139,48 @@ const Board = () => {
     const updatedPosts = posts.filter((post) => post.id !== id);
     setPosts(updatedPosts);
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
+  };
+
+  const handleEditCard = (id) => {
+    setIsEditing(true);
+    setEditPostId(id);
+    const postToEdit = posts.find((post) => post.id === id);
+    setSubject(postToEdit.subject);
+    setImage(postToEdit.image);
+    setDescription(postToEdit.description);
+    onOpen();
+  };
+
+  const handleUpdateCard = () => {
+    setSubject((prev) => prev.trim());
+    if (subject === "") return;
+    const oldPost = posts.find((post) => post.id === editPostId);
+    const date = new Date();
+    let day = date.getDate();
+    let month = date.getMonth() + 1;
+    let year = date.getFullYear();
+    let currentDate = `${day}-${month}-${year}`;
+
+    const newPost = {
+      id: oldPost.id,
+      boardId: board.id,
+      subject: subject,
+      image: image,
+      description: description,
+      isBookmarked: oldPost.isBookmarked,
+      likes: oldPost.likes,
+      createdAt: oldPost.createdAt,
+      updatedAt: currentDate,
+    };
+
+    let updatedPosts = posts.filter((post) => post.id !== editPostId);
+    updatedPosts = [...updatedPosts, newPost];
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    setSubject("");
+    setImage(null);
+    setDescription("");
+    onClose();
   };
 
   const handleDragEnd = (result) => {
@@ -231,22 +269,25 @@ const Board = () => {
             borderWidth={1}
           />
 
-          <Box color={"gray"} h={6} mr={5} mt={2}>
+          <Box
+            color={"gray"}
+            h={6}
+            mr={5}
+            mt={2}
+            onClick={() => navigate("/bookmarks")}
+          >
             <BsBookmarkFill style={{ fontSize: "1.5rem" }} />
           </Box>
         </div>
       </Box>
       <Divider mt={2} borderColor="gray.300" />
-      <Box
-        display="flex"
-        alignItems="center"
-        backgroundColor={"rgba(235, 252, 255, 1)"}
-      >
+      <Box display="flex" alignItems="center" backgroundColor="#A7F0F9">
         <Button
           ml={"auto"}
           height={50}
           width={300}
           mt={5}
+          mr={10}
           leftIcon={<AddIcon />}
           colorScheme="red"
           variant="solid"
@@ -255,43 +296,43 @@ const Board = () => {
           Create new Post
         </Button>
       </Box>
-      <Box
-        backgroundColor={"rgba(235, 252, 255, 1)"}
-        width={"100%"}
-        height={"100vh"}
-      >
+      <Box backgroundColor="#A7F0F9" width={"100%"} minHeight={"90vh"}>
         {!posts || posts.length === 0 ? (
-          <>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <img
-                src={NoPostMobile}
-                alt="Logo"
-                style={{
-                  width: "200px",
-                  height: "200px",
-                  marginLeft: "900px",
-                  marginTop: "200px",
-                }}
-              />
-            </div>
-            <Text fontSize="20px" fontWeight="bold" marginLeft={"900px"}>
+          <Flex
+            height="100%"
+            direction="column"
+            align="center"
+            justify="center"
+          >
+            <img
+              src={NoPostMobile}
+              alt="Logo"
+              style={{
+                width: "200px",
+                height: "200px",
+              }}
+            />
+            <Text fontSize="20px" fontWeight="bold">
               Nothing here yet
             </Text>
-            <Text
-              fontSize="15px"
-              fontWeight="light"
-              margin="10px"
-              marginLeft={"800px"}
-            >
+            <Text fontSize="15px" fontWeight="light">
               Create your first post by clicking on the '+' button above
             </Text>
-          </>
+          </Flex>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="posts">
+            <Droppable droppableId="posts" direction="horizontal">
               {(provided) => (
                 <div
-                  style={{ padding: "20px", display: "flex", flexWrap: "wrap" }}
+                  style={{
+                    width: "100%",
+                    maxWidth: "1400px",
+                    margin: "auto",
+                    padding: "50px 0",
+                    display: "flex",
+                    gap: "80px",
+                    flexWrap: "wrap",
+                  }}
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
@@ -303,100 +344,21 @@ const Board = () => {
                     >
                       {(provided) => (
                         <Box
-                          marginLeft={"20px"}
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                         >
-                          <Card
-                            maxW="md"
-                            width={"275px"}
-                            height={"600px"}
-                            marginLeft={"79px"}
-                          >
-                            <CardHeader>
-                              <Flex justify="space-between" alignItems="center">
-                                <Flex
-                                  gap="4"
-                                  alignItems="center"
-                                  flexWrap="wrap"
-                                >
-                                  <Box>
-                                    <Heading
-                                      fontSize={"30px"}
-                                      fontWeight={"bold"}
-                                    >
-                                      {post.subject}
-                                    </Heading>
-                                    <Text color={"grey"} marginTop={"2px"}>
-                                      25th July
-                                    </Text>
-                                  </Box>
-                                </Flex>
-                                <Flex>
-                                  <IconButton
-                                    variant="ghost"
-                                    colorScheme="gray"
-                                    aria-label="Bookmark"
-                                    icon={
-                                      post.isBookmarked ? (
-                                        <BsBookmarkFill />
-                                      ) : (
-                                        <BsBookmark />
-                                      )
-                                    }
-                                    onClick={() => handleClickBookmark(post.id)}
-                                  />
-
-                                  <Menu>
-                                    <MenuButton
-                                      as={IconButton}
-                                      variant="ghost"
-                                      colorScheme="gray"
-                                      aria-label="See menu"
-                                      icon={<BsThreeDotsVertical />}
-                                    />
-                                    <MenuList>
-                                      <MenuItem>
-                                        <FaEdit
-                                          color="gray"
-                                          style={{ marginRight: "0.5em" }}
-                                        />{" "}
-                                        Edit
-                                      </MenuItem>
-                                      <MenuItem
-                                        onClick={() =>
-                                          handleDeleteCard(post.id)
-                                        }
-                                      >
-                                        <FaTrash
-                                          color="red"
-                                          style={{ marginRight: "0.5em" }}
-                                        />{" "}
-                                        Delete
-                                      </MenuItem>
-                                    </MenuList>
-                                  </Menu>
-                                </Flex>
-                              </Flex>
-                            </CardHeader>
-                            <Divider />
-                            <CardBody>
-                              {post.image && (
-                                <Image
-                                  src={post.image}
-                                  alt="Post"
-                                  marginBottom={"10px"}
-                                />
-                              )}
-                              <Text fontSize={"18px"}>{post.description}</Text>
-                            </CardBody>
-                            <CardFooter></CardFooter>
-                          </Card>
+                          <PostCard
+                            post={post}
+                            handleClickBookmark={handleClickBookmark}
+                            handleEditCard={handleEditCard}
+                            handleDeleteCard={handleDeleteCard}
+                          />
                         </Box>
                       )}
                     </Draggable>
                   ))}
+
                   {provided.placeholder}
                 </div>
               )}
@@ -440,9 +402,15 @@ const Board = () => {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleCreatePost}>
-              Create
-            </Button>
+            {isEditing ? (
+              <Button colorScheme="blue" mr={3} onClick={handleUpdateCard}>
+                Update
+              </Button>
+            ) : (
+              <Button colorScheme="blue" mr={3} onClick={handleCreatePost}>
+                Create
+              </Button>
+            )}
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>

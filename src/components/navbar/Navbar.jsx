@@ -10,8 +10,10 @@ import {
   InputRightElement,
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = ({ title }) => {
+  const navigate = useNavigate();
   return (
     <Box>
       <div
@@ -22,7 +24,11 @@ const Navbar = ({ title }) => {
           padding: "20px",
         }}
       >
-        <div className="Arrow" style={{ marginTop: "5px", color: "gray" }}>
+        <div
+          className="Arrow"
+          onClick={() => navigate("/")}
+          style={{ marginTop: "5px", color: "gray" }}
+        >
           <IoIosArrowBack size={30} />
         </div>
         <div style={{ display: "flex", alignItems: "center", flex: 1 }}>

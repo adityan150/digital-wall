@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Button,
   Card,
   CardBody,
   CardFooter,
@@ -15,7 +14,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Stack,
   Text,
 } from "@chakra-ui/react";
 import Navbar from "../navbar/Navbar";
@@ -34,8 +32,6 @@ const Bookmark = () => {
     if (storedBookmarks) {
       setBookmarks(JSON.parse(storedBookmarks));
     }
-
-    console.log(bookmarks);
   }, []);
 
   return (

@@ -8,32 +8,16 @@ import {
   Box,
   Divider,
   Text,
-  Card,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  HStack,
+  Flex,
 } from "@chakra-ui/react";
 import { SearchIcon, AddIcon } from "@chakra-ui/icons";
-import { FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
-import { Circle, Icon } from "@chakra-ui/react";
-
 import logoImage from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import BoardModal from "../boardModal/BoardModal";
+import BoardCard from "../boardCard/BoardCard";
 
 const Home = () => {
-  const [openBoardIndex, setOpenBoardIndex] = useState(null);
+  const [openBoardId, setOpenBoardId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [boardTitle, setBoardTitle] = useState("");
@@ -53,8 +37,8 @@ const Home = () => {
     setBoards(parsedBoards);
   }, []);
 
-  const handleMenuToggle = (index) => {
-    setOpenBoardIndex(index === openBoardIndex ? null : index);
+  const handleMenuToggle = (id) => {
+    setOpenBoardId(id === openBoardId ? null : id);
   };
 
   const handleSearch = (event) => {
@@ -136,7 +120,7 @@ const Home = () => {
       color: selectedColor,
     };
 
-    let updatedBoards = boards.filter((board) => board.id != editBoardId);
+    let updatedBoards = boards.filter((board) => board.id !== editBoardId);
     updatedBoards = [...updatedBoards, newBoard];
     setBoards(updatedBoards);
     localStorage.setItem("boards", JSON.stringify(updatedBoards));
@@ -152,40 +136,41 @@ const Home = () => {
   return (
     <>
       <Box>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "20px",
-          }}
+        <Flex
+          width="100vw"
+          align="center"
+          justify="space-between"
+          padding="20px 50px"
         >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <img
-              src={logoImage}
-              alt="Logo"
-              style={{ width: "110px", height: "40px", marginRight: "900px" }}
-            />
-            <InputGroup marginRight={"30px"}>
-              <InputLeftElement
-                pointerEvents="none"
-                borderRadius="10rem"
-                color="gray.400"
-                fontSize="1.2em"
-                children={<SearchIcon color="blue.300" />}
-                marginLeft="10px"
-              />
-              <Input
-                type="tel"
-                placeholder="Search.."
-                focusBorderColor="blue.400"
-                fontSize="1.1em"
-                boxShadow="sm"
-                rounded="md"
-                pl="2.5em"
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </InputGroup>
+          <img
+            src={logoImage}
+            alt="Logo"
+            style={{ width: "110px", height: "40px" }}
+          />
+          <Flex gap="20px">
+            <div>
+              <InputGroup>
+                <InputLeftElement
+                  pointerEvents="none"
+                  borderRadius="10rem"
+                  color="gray.400"
+                  fontSize="1.2em"
+                  children={<SearchIcon color="blue.300" />}
+                  marginLeft="10px"
+                />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  focusBorderColor="gray.400"
+                  fontSize="1.1em"
+                  boxShadow="sm"
+                  rounded="md"
+                  pl="2.5em"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                />
+              </InputGroup>
+            </div>
             <Stack ml={4}>
               <Button
                 leftIcon={<AddIcon />}
@@ -196,198 +181,48 @@ const Home = () => {
                 Create new board
               </Button>
             </Stack>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Box>
-      <Divider mt={2} borderColor="gray.300" />
+      <Divider borderColor="gray.300" />
       <Box>
         <Text fontSize="37px" fontWeight="bold" margin="40px">
           My boards
         </Text>
-        <Stack
-          direction={{ base: "column", sm: "row" }}
-          spacing={4}
+        <Flex
+          width="100vw"
+          flexDirection="row"
           flexWrap="wrap"
+          gap="50px"
+          padding="0 40px"
+          justifyContent="flex-start"
+          align="flex-start"
         >
           {filteredBoards.map((board, index) => (
-            <Box position="relative" key={index}>
-              <Card
-                onClick={(event) => handleNavigation(board.id)}
-                direction={{ base: "column", sm: "row" }}
-                overflow="hidden"
-                variant="outline"
-                w="400px"
-                h="80px"
-                marginLeft={"40px"}
-                alignItems="center"
-                paddingLeft="20%"
-                style={{
-                  display:
-                    !board.title
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase()) && "none",
-                }}
-              >
-                <Text
-                  fontSize="12px"
-                  color="black"
-                  display="flex"
-                  alignItems="center"
-                  marginRight={"10px"}
-                >
-                  {board.title}
-                </Text>
-                <Box
-                  bg={board.color}
-                  position="absolute"
-                  left={0}
-                  top={0}
-                  bottom={0}
-                  width="20%"
-                ></Box>
-                <Box
-                  position="absolute"
-                  right={0}
-                  top="50%"
-                  transform="translateY(-50%)"
-                  paddingRight="10px"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    handleMenuToggle(index);
-                  }}
-                  cursor="pointer"
-                >
-                  <FaEllipsisV />
-                </Box>
-              </Card>
-              {openBoardIndex === index && (
-                <Menu
-                  isOpen={true}
-                  onClose={() => setOpenBoardIndex(null)}
-                  placement="right"
-                  style={{
-                    width: "40%",
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
-                    borderRadius: "0.5rem",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                >
-                  <MenuButton
-                    as={Box}
-                    position="absolute"
-                    left="86%"
-                    top="120%"
-                    transform="translateY(-50%)"
-                    zIndex={1}
-                    bg="white"
-                    rounded="md"
-                    mt="1px"
-                    onClick={() => handleMenuToggle(index)}
-                  ></MenuButton>
-                  <MenuList>
-                    <MenuItem onClick={() => handleEditBoard(board.id)}>
-                      <FaEdit color="grey" style={{ marginRight: "0.5em" }} />{" "}
-                      Edit
-                    </MenuItem>
-                    <MenuItem onClick={() => handleDeleteBoard(board.id)}>
-                      <FaTrash color="red" style={{ marginRight: "0.5em" }} />{" "}
-                      Delete
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
-              )}
-            </Box>
+            <BoardCard
+              key={index}
+              board={board}
+              openBoardId={openBoardId}
+              setOpenBoardId={setOpenBoardId}
+              handleMenuToggle={handleMenuToggle}
+              handleNavigation={handleNavigation}
+              handleEditBoard={handleEditBoard}
+              handleDeleteBoard={handleDeleteBoard}
+            />
           ))}
-        </Stack>
+        </Flex>
       </Box>
-      <Modal isOpen={isModalOpen} onClose={handleModalClose} size="lg">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontWeight={"bold"}>
-            Add a name for your board
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl id="boardTitle">
-              <Input
-                type="text"
-                placeholder="Enter board name"
-                value={boardTitle}
-                onChange={handleBoardTitleChange}
-              />
-            </FormControl>
-            <FormControl id="boardColor">
-              <FormLabel
-                marginTop={"30px"}
-                fontWeight={"bold"}
-                fontSize={"20px"}
-              >
-                Select post colour
-              </FormLabel>
-              <Text fontSize={"12px"} marginTop={"0px"}>
-                Here are some templates to choose from
-              </Text>
-
-              <RadioGroup onChange={handleColorChange} value={selectedColor}>
-                <HStack spacing={4} marginTop={"10px"}>
-                  <Circle
-                    size="5"
-                    bg="blue.200"
-                    onClick={() => handleColorChange("blue.200")}
-                    border={
-                      selectedColor === "blue.200" ? "2px solid black" : "none"
-                    }
-                  />
-                  <Circle
-                    size="5"
-                    bg="purple.200"
-                    onClick={() => handleColorChange("purple.200")}
-                    border={
-                      selectedColor === "purple.200"
-                        ? "2px solid black"
-                        : "none"
-                    }
-                  />
-                  <Circle
-                    size="5"
-                    bg="pink.200"
-                    onClick={() => handleColorChange("pink.200")}
-                    border={
-                      selectedColor === "pink.200" ? "2px solid black" : "none"
-                    }
-                  />
-                  <Circle
-                    size="5"
-                    bg="yellow.300"
-                    onClick={() => handleColorChange("yellow.300")}
-                    border={
-                      selectedColor === "yellow.300"
-                        ? "2px solid black"
-                        : "none"
-                    }
-                  />
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleModalClose}>
-              Cancel
-            </Button>
-            {isEditing ? (
-              <Button colorScheme="red" mr={3} onClick={handleUpdateBoard}>
-                Update board
-              </Button>
-            ) : (
-              <Button colorScheme="red" mr={3} onClick={handleCreateBoard}>
-                Create board
-              </Button>
-            )}
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <BoardModal
+        isModalOpen={isModalOpen}
+        handleModalClose={handleModalClose}
+        boardTitle={boardTitle}
+        handleBoardTitleChange={handleBoardTitleChange}
+        selectedColor={selectedColor}
+        handleColorChange={handleColorChange}
+        isEditing={isEditing}
+        handleCreateBoard={handleCreateBoard}
+        handleUpdateBoard={handleUpdateBoard}
+      />
     </>
   );
 };
