@@ -1,13 +1,15 @@
 import React from "react";
-import Icon from "../../assets/ToddleIcon.png";
+import Icon from "../../assets/digital-wall.svg";
 import { IoIosArrowBack } from "react-icons/io";
 import { BsBookmark } from "react-icons/bs";
 import {
   Box,
   Divider,
+  Flex,
   Text,
+  Input,
   InputGroup,
-  InputRightElement,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
@@ -15,64 +17,44 @@ import { useNavigate } from "react-router-dom";
 const Navbar = ({ title }) => {
   const navigate = useNavigate();
   return (
-    <Box>
-      <div
-        style={{
-          backgroundColor: "white",
-          display: "flex",
-          alignItems: "center",
-          padding: "20px",
-        }}
-      >
-        <div
-          className="Arrow"
-          onClick={() => navigate("/")}
-          style={{ marginTop: "5px", color: "gray" }}
-        >
+    <Flex justify="space-between" align="center" h="80px" padding="20px 50px">
+      <Flex justify="space-between" align="center" gap="10px">
+        <div onClick={() => navigate("/")} style={{ color: "gray" }}>
           <IoIosArrowBack size={30} />
         </div>
-        <div style={{ display: "flex", alignItems: "center", flex: 1 }}>
-          <img
-            src={Icon}
-            alt="Logo"
-            style={{ width: "40px", height: "40px", marginRight: "10px" }}
-          />
-          <Text
-            fontSize="20px"
-            fontWeight="bold"
-            whiteSpace="nowrap"
-            overflow="hidden"
-            textOverflow="ellipsis"
-          >
-            {title}
-          </Text>
-        </div>
-        <InputGroup width="200px">
-          <InputRightElement
-            pointerEvents="none"
-            borderRadius="10rem"
-            color="gray.900"
-            fontSize="1.2em"
-            alignContent={"center"}
-            children={<SearchIcon color="gray.300" />}
-            marginRight="10px"
-          />
-        </InputGroup>
-
+        <img src={Icon} alt="Logo" style={{ width: "50px", height: "40px" }} />
+        <Text fontSize="25px" fontWeight="bold" color="slategray">
+          {title}
+        </Text>
+      </Flex>
+      <Flex justify="space-between" align="center" gap="20px">
+        <Box>
+          <InputGroup>
+            <InputLeftElement
+              pointerEvents="none"
+              color="gray"
+              fontSize="1.5em"
+              children={<SearchIcon />}
+            />
+            <Input
+              type="text"
+              placeholder="Search posts by title..."
+              value={""}
+            />
+          </InputGroup>
+        </Box>
         <Divider
           orientation="vertical"
-          mx={4}
           h={6}
-          mt={2}
           borderColor="gray"
           borderWidth={1}
         />
 
-        <Box mt={1.5} color="gray" mr={5}>
+        <Box color="gray">
           <BsBookmark size={30} />
         </Box>
-      </div>
-    </Box>
+      </Flex>
+    </Flex>
   );
 };
 

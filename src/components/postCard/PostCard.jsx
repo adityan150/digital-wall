@@ -46,7 +46,9 @@ function PostCard({
               colorScheme="gray"
               aria-label="Bookmark"
               icon={post.isBookmarked ? <BsBookmarkFill /> : <BsBookmark />}
-              onClick={() => handleClickBookmark(post.id)}
+              onClick={() =>
+                handleClickBookmark ? handleClickBookmark(post.id) : null
+              }
             />
 
             <Menu>
@@ -58,10 +60,18 @@ function PostCard({
                 icon={<BsThreeDotsVertical />}
               />
               <MenuList>
-                <MenuItem onClick={() => handleEditCard(post.id)}>
+                <MenuItem
+                  onClick={() =>
+                    handleEditCard ? handleEditCard(post.id) : null
+                  }
+                >
                   <FaEdit color="gray" style={{ marginRight: "0.5em" }} /> Edit
                 </MenuItem>
-                <MenuItem onClick={() => handleDeleteCard(post.id)}>
+                <MenuItem
+                  onClick={() =>
+                    handleDeleteCard ? handleDeleteCard(post.id) : null
+                  }
+                >
                   <FaTrash color="red" style={{ marginRight: "0.5em" }} />{" "}
                   Delete
                 </MenuItem>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Icon from "../../assets/ToddleIcon.png";
+import Icon from "../../assets/digital-wall.svg";
 import { IoIosArrowBack } from "react-icons/io";
 import {
   Box,
@@ -91,7 +91,39 @@ const Board = () => {
     }
   }, [id, navigate]);
 
-  const handleClickBookmark = (id) => {};
+  const handleClickBookmark = (id) => {
+    const bookmarks = localStorage.getItem("bookmarks");
+    const parsedBookmarks = bookmarks ? JSON.parse(bookmarks) : [];
+    const isBookmarked = parsedBookmarks.find((postId) => postId === id);
+    // if the post is already bookmarked, remove it from bookmarks
+    if (isBookmarked) {
+      const updatedBookmarks = parsedBookmarks.filter(
+        (postId) => postId !== id
+      );
+      localStorage.setItem("bookmarks", JSON.stringify(updatedBookmarks));
+      const updatedPosts = posts.map((post) => {
+        if (post.id === id) {
+          return { ...post, isBookmarked: false };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    }
+    // if the post is not bookmarked, add it to bookmarks
+    if (!isBookmarked) {
+      parsedBookmarks.push(id);
+      localStorage.setItem("bookmarks", JSON.stringify(parsedBookmarks));
+      const updatedPosts = posts.map((post) => {
+        if (post.id === id) {
+          return { ...post, isBookmarked: true };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
+      localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    }
+  };
 
   const handleSubjectChange = (event) => {
     setSubject(event.target.value);
@@ -139,6 +171,12 @@ const Board = () => {
     const updatedPosts = posts.filter((post) => post.id !== id);
     setPosts(updatedPosts);
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
+
+    // remove the deleted post from bookmarks if it is bookmarked
+    const bookmarks = localStorage.getItem("bookmarks");
+    const parsedBookmarks = bookmarks ? JSON.parse(bookmarks) : [];
+    const updatedBookmarks = parsedBookmarks.filter((postId) => postId !== id);
+    localStorage.setItem("bookmarks", JSON.stringify(updatedBookmarks));
   };
 
   const handleEditCard = (id) => {
@@ -201,91 +239,64 @@ const Board = () => {
   return (
     <>
       <Box>
-        <div
-          style={{
-            backgroundColor: "white",
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "20px",
-          }}
+        <Flex
+          justify="space-between"
+          align="center"
+          h="80px"
+          padding="20px 50px"
         >
-          <div
-            onClick={() => navigate("/")}
-            className="Arrow"
-            style={{ margin: "5px", color: "gray" }}
-          >
-            <IoIosArrowBack size={30} />
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "auto",
-            }}
-          >
-            <img
-              src={Icon}
-              alt="Logo"
-              style={{ width: "40px", height: "40px" }}
+          <Flex justify="space-between" align="center" gap="10px">
+            <Box color="gray" onClick={() => navigate("/")}>
+              <IoIosArrowBack size={30} />
+            </Box>
+            <Flex>
+              <img
+                src={Icon}
+                alt="Logo"
+                style={{ width: "50px", height: "40px" }}
+              />
+              <Text fontSize="25px" fontWeight="bold" color="slategray">
+                {board.title}
+              </Text>
+            </Flex>
+          </Flex>
+          <Flex justify="space-between" align="center" gap="30px">
+            <Box>
+              <InputGroup>
+                <InputLeftElement
+                  pointerEvents="none"
+                  color="gray"
+                  fontSize="1.5em"
+                  children={<SearchIcon />}
+                />
+                <Input
+                  type="text"
+                  placeholder="Search posts by title..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </InputGroup>
+            </Box>
+
+            <Divider
+              orientation="vertical"
+              h={8}
+              borderColor="gray"
+              borderWidth={1}
             />
-            <h1
-              style={{
-                display: "flex",
-                whiteSpace: "nowrap",
-                fontWeight: "bold",
-                fontSize: "25px",
-                fontFamily: "Montserrat",
-                marginLeft: "auto",
-              }}
-            >
-              {board.title}
-            </h1>
-          </div>
 
-          <Box color="gray" h={6} mr={5} mt={2}>
-            <InputGroup>
-              <InputLeftElement
-                pointerEvents="none"
-                color="gray"
-                fontSize="1.5em"
-                children={<SearchIcon />}
-                marginLeft="10px"
-              />
-              <Input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-            </InputGroup>
-          </Box>
-
-          <Divider
-            orientation="vertical"
-            mx={4}
-            h={6}
-            mt={2}
-            borderColor="gray"
-            borderWidth={1}
-          />
-
-          <Box
-            color={"gray"}
-            h={6}
-            mr={5}
-            mt={2}
-            onClick={() => navigate("/bookmarks")}
-          >
-            <BsBookmarkFill style={{ fontSize: "1.5rem" }} />
-          </Box>
-        </div>
+            <Box color="gray" onClick={() => navigate("/bookmarks")}>
+              <BsBookmarkFill style={{ fontSize: "1.5rem" }} />
+            </Box>
+          </Flex>
+        </Flex>
       </Box>
-      <Divider mt={2} borderColor="gray.300" />
+      <Divider borderColor="gray.300" />
       <Box display="flex" alignItems="center" backgroundColor="#A7F0F9">
         <Button
           ml={"auto"}
-          height={50}
-          width={300}
+          h={50}
+          w={300}
           mt={5}
           mr={10}
           leftIcon={<AddIcon />}
@@ -296,7 +307,7 @@ const Board = () => {
           Create new Post
         </Button>
       </Box>
-      <Box backgroundColor="#A7F0F9" width={"100%"} minHeight={"90vh"}>
+      <Box backgroundColor="#A7F0F9" w="100%" minH="90vh">
         {!posts || posts.length === 0 ? (
           <Flex
             height="100%"
@@ -330,7 +341,7 @@ const Board = () => {
                     margin: "auto",
                     padding: "50px 0",
                     display: "flex",
-                    gap: "80px",
+                    gap: "60px",
                     flexWrap: "wrap",
                   }}
                   {...provided.droppableProps}

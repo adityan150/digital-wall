@@ -23,7 +23,6 @@ function BoardCard({
     <Card
       onClick={(event) => handleNavigation(board.id)}
       direction={{ base: "column", sm: "row" }}
-      overflow="hidden"
       variant="outline"
       w="400px"
       h="80px"
@@ -74,10 +73,20 @@ function BoardCard({
             onClick={() => handleMenuToggle(board.id)}
           ></MenuButton>
           <MenuList>
-            <MenuItem onClick={() => handleEditBoard(board.id)}>
+            <MenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditBoard(board.id);
+              }}
+            >
               <FaEdit color="grey" style={{ marginRight: "0.5em" }} /> Edit
             </MenuItem>
-            <MenuItem onClick={() => handleDeleteBoard(board.id)}>
+            <MenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteBoard(board.id);
+              }}
+            >
               <FaTrash color="red" style={{ marginRight: "0.5em" }} /> Delete
             </MenuItem>
           </MenuList>

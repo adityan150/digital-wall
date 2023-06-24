@@ -33,7 +33,7 @@ function BoardModal({
     <Modal isOpen={isModalOpen} onClose={handleModalClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader fontWeight={"bold"}>Add a name for your board</ModalHeader>
+        <ModalHeader fontWeight="bold">Add a name for your board</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl id="boardTitle">
@@ -45,15 +45,13 @@ function BoardModal({
             />
           </FormControl>
           <FormControl id="boardColor">
-            <FormLabel marginTop={"30px"} fontWeight={"bold"} fontSize={"20px"}>
+            <FormLabel marginTop="30px" fontWeight="bold" fontSize="20px">
               Select post colour
             </FormLabel>
-            <Text fontSize={"16px"}>
-              Here are some templates to choose from
-            </Text>
+            <Text fontSize="16px">Here are some templates to choose from</Text>
 
             <RadioGroup onChange={handleColorChange} value={selectedColor}>
-              <HStack spacing={4} marginTop={"30px"}>
+              <HStack spacing={4} marginTop="30px">
                 {COLORS.map((value, index) => {
                   return (
                     <Circle

@@ -11,7 +11,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { SearchIcon, AddIcon } from "@chakra-ui/icons";
-import logoImage from "../../assets/logo.png";
+import logoImage from "../../assets/digital-wall.svg";
 import { useNavigate } from "react-router-dom";
 import BoardModal from "../boardModal/BoardModal";
 import BoardCard from "../boardCard/BoardCard";
@@ -21,7 +21,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [boardTitle, setBoardTitle] = useState("");
-  const [selectedColor, setSelectedColor] = useState("blue.500");
+  const [selectedColor, setSelectedColor] = useState("#A7F0F9");
   const [boards, setBoards] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editBoardId, setEditBoardId] = useState(null);
@@ -30,10 +30,7 @@ const Home = () => {
 
   useEffect(() => {
     const storedBoards = localStorage.getItem("boards");
-    if (!storedBoards) {
-      return;
-    }
-    const parsedBoards = JSON.parse(storedBoards);
+    const parsedBoards = JSON.parse(storedBoards) || [];
     setBoards(parsedBoards);
   }, []);
 
@@ -46,7 +43,7 @@ const Home = () => {
   };
 
   const handleModalOpen = () => {
-    setSelectedColor("blue.500");
+    setSelectedColor("#A7F0F9");
     setBoardTitle("");
     setIsEditing(false);
     setIsModalOpen(true);
@@ -67,6 +64,7 @@ const Home = () => {
   const handleDeleteBoard = (id) => {
     const updatedBoards = boards.filter((board) => board.id !== id);
     setBoards(updatedBoards);
+    // if there are no boards left, remove the boards key from localStorage
     if (updatedBoards.length === 0) {
       localStorage.removeItem("boards");
       localStorage.removeItem("posts");
@@ -75,13 +73,16 @@ const Home = () => {
 
     localStorage.setItem("boards", updatedBoards);
 
+    // remove all posts from the deleted board
     const posts = localStorage.getItem("posts");
-    const parsedPosts = JSON.parse(posts);
+    const parsedPosts = JSON.parse(posts) || [];
     const updatedPosts = parsedPosts.filter((post) => post.boardId !== id);
+    // if there are no posts left, remove the posts key from localStorage
     if (updatedPosts.length === 0) {
       localStorage.removeItem("posts");
       return;
     }
+
     localStorage.setItem("posts", updatedPosts);
   };
 
@@ -96,7 +97,7 @@ const Home = () => {
     localStorage.setItem("boards", JSON.stringify(updatedBoards));
     setIsModalOpen(false);
     setBoardTitle("");
-    setSelectedColor("blue.500");
+    setSelectedColor("#A7F0F9");
   };
 
   const handleNavigation = (boardId) => {
@@ -142,20 +143,25 @@ const Home = () => {
           justify="space-between"
           padding="20px 50px"
         >
-          <img
-            src={logoImage}
-            alt="Logo"
-            style={{ width: "110px", height: "40px" }}
-          />
+          <Flex justify="space-between" align="center" gap="10px">
+            <img
+              src={logoImage}
+              alt="Logo"
+              style={{ width: "50px", height: "40px" }}
+            />
+            <Text fontSize="25px" fontWeight="bold" color="slategray">
+              The Wall
+            </Text>
+          </Flex>
           <Flex gap="20px">
             <div>
               <InputGroup>
                 <InputLeftElement
                   pointerEvents="none"
                   borderRadius="10rem"
-                  color="gray.400"
+                  color="gray"
                   fontSize="1.2em"
-                  children={<SearchIcon color="blue.300" />}
+                  children={<SearchIcon />}
                   marginLeft="10px"
                 />
                 <Input
@@ -211,18 +217,18 @@ const Home = () => {
             />
           ))}
         </Flex>
+        <BoardModal
+          isModalOpen={isModalOpen}
+          handleModalClose={handleModalClose}
+          boardTitle={boardTitle}
+          handleBoardTitleChange={handleBoardTitleChange}
+          selectedColor={selectedColor}
+          handleColorChange={handleColorChange}
+          isEditing={isEditing}
+          handleCreateBoard={handleCreateBoard}
+          handleUpdateBoard={handleUpdateBoard}
+        />
       </Box>
-      <BoardModal
-        isModalOpen={isModalOpen}
-        handleModalClose={handleModalClose}
-        boardTitle={boardTitle}
-        handleBoardTitleChange={handleBoardTitleChange}
-        selectedColor={selectedColor}
-        handleColorChange={handleColorChange}
-        isEditing={isEditing}
-        handleCreateBoard={handleCreateBoard}
-        handleUpdateBoard={handleUpdateBoard}
-      />
     </>
   );
 };
